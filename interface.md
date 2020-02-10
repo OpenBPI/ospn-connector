@@ -1,19 +1,20 @@
-OSN-CONNECTOR 接口文档
-
+# OSN-CONNECTOR 接口文档
 IM服务（以下简称IMS）的作用是与OSN-connector(以下简称OSNC)进行数据交互。
-IMS与OSNC之间通过http进行通信。通信格式为json
+IMS与OSNC之间通过http进行通信，通信格式为json格式。
 
-1.发送消息
+1. 发送消息
 当IMS上有消息积累时，会通过OSNC通知对方取走数据。
 由IMS发送给OSNC
-{
-command:message，
-to:[OSNID]
-}
+```
+<p>{</p>
+<p>command:message</p>
+<p>to:[OSNID]</p>
+<p>}</p>
+```
 该命令单向发送。
 
-2.查找用户
-当OSNC接收到其他OSNC的查找用户消息时会通知OSNC。
+2. 查找用户
+>当OSNC接收到其他OSNC的查找用户消息时会通知OSNC。
 由OSNC发送给IMS
 {
 command:finduser
@@ -22,7 +23,7 @@ ip:[target ip]
 }
 该命令单向发送。
 
-3.获取消息来源列表
+3. 获取消息来源列表
 当IMS接收到finduser，并判断finduser为自己的用户时，发送消息获取消息来源列表
 由IMS发送给OSNC
 {
@@ -30,20 +31,11 @@ command:getmsglist
 hash:[OSNID的hash]
 ip:[来自finduser的ip]
 }
-
-OSNC接收到来自其他OSNC的getmsglist消息以后会转发给IMS
-由OSNC发送给IMS
-{
-command:getmsglist
-hash:[OSNID的hash]
-ip:[来自finduser的ip]
-}
-
 IMS回复
 {to:OSNID,from:[OSNID1,OSNID2,OSNID3...]}
 
-4.获取用户消息
-由IMS发送给OSNC
+4. 获取用户消息
+>由IMS发送给OSNC
 {
 command:getmsg
 from:[OSNID来源方]
@@ -53,8 +45,8 @@ ip:[target ip]
 IMS接收到来自OSNC的getmsg消息以后的回复
 {[msg1,msg2,msg3...]}
 
-5.OSNID转hash
-由IMS发送给OSNC
+5. OSNID转hash
+>由IMS发送给OSNC
 {
 command:gethash
 user:OSNID
