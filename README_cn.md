@@ -1,5 +1,6 @@
 ﻿#OSN-connector
-`OSN-connector` 是一个跨界通讯的服务，企业或者个人的IM服务通过与OSN-connector交互可以让不同应用（APP）上的用户进行跨界交流。
+
+OSN-connector 是一个跨界通讯的服务，企业或者个人的IM服务通过与OSN-connector交互可以让不同应用（APP）上的用户进行跨界交流。
 ---------------------------------------
 ##安装
 ###一、编译IPFSOSN-connector目前采用了IPFS的p2p模块，并进行了简单的修改。
