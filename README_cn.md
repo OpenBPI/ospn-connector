@@ -14,15 +14,12 @@ TODO
 1.修改ipfs可执行标志  
 2.初始化ipfs ```./ipfs init```  
 3.启动ipfs后台 ```nohup ./ipfs daemon > ipfs.log &```  
-4.查询ipfs节点ID（[节点ID列表
-]()
-
-） ```./ipfs id```  
+4.查询ipfs节点ID ```./ipfs id```  
 5.连接到其他节点 ```./ipfs swarm connect [id]```  
 6.启动osn服务 ```nohup java -jar osn-connector.jar > connector.log &```  
 ## 配置
 OSN-connector需要配置与其交互数据的IM服务，ip为IM服务的IP,端口目前固定为8100，配置命令如下：  
 ```nohup java -jar osn_connector.jar [ip] > connector.log &```
 ## 文档
-[OSN-connector]接口文档(./interface.md)
+[OSN-connector接口文档](./interface.md)
 
