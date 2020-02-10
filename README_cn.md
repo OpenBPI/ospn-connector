@@ -1,11 +1,10 @@
 ﻿# OSN-connector
 `OSN-connector` 是一个跨界通讯的服务，企业或者个人的IM服务通过与OSN-connector交互可以让不同应用（APP）上的用户进行跨界交流。
 ## 安装
-### 一、编译IPFSOSN-connector目前采用了IPFS的p2p模块，并进行了简单的修改。  
-IPFS下载地址```https://github.com/ipfs/go-ipfs```  
-下载完成以后需要修改两个地方  
-1、把查询回应去掉。   
-2、把查询信息post给connector。   
+### 一、编译IPFS  
+OSN-connector目前采用了[IPFS](https://github.com/ipfs/go-ipfs)的p2p模块，并进行了简单的修改。下载完成以后需要修改两个地方  
+1. 把查询回应去掉。   
+2. 把查询信息post给connector。   
 打开go-ipfs-master/cmd/ipfs/main.go文件点击编译。  
 注：如不想自行修改也可以直接下载我们已经修改好的代码进行编译。
 
@@ -13,7 +12,7 @@ IPFS下载地址```https://github.com/ipfs/go-ipfs```
 TODO
 
 ### 三、部署
-1.修改ipfs可执行标志(如何修改？)
+1.修改ipfs可执行标志
 2.初始化ipfs 
 ```./ipfs init```
 3.启动ipfs后台 
