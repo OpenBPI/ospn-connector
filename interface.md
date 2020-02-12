@@ -62,7 +62,18 @@ IMS回复
 }
 ```
 
-5. OSNID转hash
+5. 发送回执
+
+该命令由IMS发送给OSNC。
+```
+{
+command:complete
+ip:[target ip]
+content:[内容以及格式请参见《开放式社交网络通信协议》]
+}
+```
+
+6. OSNID转hash
 
 该命令由IMS发送给OSNC。
 ```
