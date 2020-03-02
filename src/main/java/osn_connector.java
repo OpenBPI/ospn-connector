@@ -187,11 +187,11 @@ public class osn_connector implements HttpHandler {
         } else{
             String ip = json.getString("ip");
             String from = json.getString("from");
+            logInfo("[GetMessage ->] ip: " + ip + ", from: " + from);
             if(ip == null){
                 respone(exchange, errFormat());
                 return;
             }
-            logInfo("[GetMessage ->] ip: " + ip + ", from: " + from);
             json = forward(ip, json);
             respone(exchange, json);
         }
