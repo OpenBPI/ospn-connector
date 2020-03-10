@@ -21,6 +21,10 @@ TODO
 ## 配置
 OSN-connector需要配置与其交互数据的IM服务，ip为IM服务的IP,端口目前固定为8100，配置命令如下：  
 ```nohup java -jar osn_connector.jar [ip] > connector.log &```
+
+## 节点  
+可用节点请参考[节点列表](peerlist.md)。
+
 ## 文档
 [OSN-connector接口文档](./interface.md)
 
