@@ -12,6 +12,7 @@ class Base58 {
             INDEXES[ALPHABET[i]] = i;
         }
     }
+
     public static String encode(byte[] input) {
         if (input.length == 0) {
             return "";
@@ -40,7 +41,6 @@ class Base58 {
         byte[] output = copyOfRange(temp, j, temp.length);
         return new String(output);
     }
-
     public static byte[] decode(String input) {
         if (input.length() == 0) {
             return new byte[0];
@@ -78,7 +78,6 @@ class Base58 {
         }
         return copyOfRange(temp, j - zeroCount, temp.length);
     }
-
     private static byte divmod58(byte[] number, int startAt) {
         int remainder = 0;
         for (int i = startAt;
@@ -91,7 +90,6 @@ class Base58 {
         }
         return (byte) remainder;
     }
-
     private static byte divmod256(byte[] number58, int startAt) {
         int remainder = 0;
         for (int i = startAt;
@@ -104,7 +102,6 @@ class Base58 {
         }
         return (byte) remainder;
     }
-
     private static byte[] copyOfRange(byte[] source, int from, int to) {
         byte[] range = new byte[to - from];
         System.arraycopy(source, from, range, 0, range.length);
