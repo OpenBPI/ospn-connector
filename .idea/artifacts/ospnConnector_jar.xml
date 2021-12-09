@@ -1,0 +1,25 @@
+<component name="ArtifactManager">
+  <artifact name="ospnConnector:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/ospnConnector_jar</output-path>
+    <root id="root">
+      <element id="archive" name="ospnConnector.jar">
+        <element id="directory" name="META-INF">
+          <element id="file-copy" path="$PROJECT_DIR$/src/main/META-INF/MANIFEST.MF" />
+        </element>
+        <element id="module-output" name="ospnConnector" />
+      </element>
+      <element id="library" level="project" name="Maven: com.mchange:c3p0:0.9.5.5" />
+      <element id="library" level="project" name="Maven: com.google.protobuf:protobuf-java:3.6.1" />
+      <element id="library" level="project" name="Maven: io.netty:netty-codec-http:4.1.45.Final" />
+      <element id="library" level="project" name="Maven: io.netty:netty-codec:4.1.45.Final" />
+      <element id="library" level="project" name="Maven: io.netty:netty-transport:4.1.45.Final" />
+      <element id="library" level="project" name="Maven: io.netty:netty-common:4.1.45.Final" />
+      <element id="library" level="project" name="Maven: io.netty:netty-resolver:4.1.45.Final" />
+      <element id="library" level="project" name="Maven: com.mchange:mchange-commons-java:0.2.19" />
+      <element id="library" level="project" name="Maven: io.netty:netty-buffer:4.1.45.Final" />
+      <element id="library" level="project" name="Maven: mysql:mysql-connector-java:8.0.20" />
+      <element id="library" level="project" name="Maven: io.netty:netty-handler:4.1.45.Final" />
+      <element id="library" level="project" name="Maven: com.alibaba:fastjson:1.2.76" />
+    </root>
+  </artifact>
+</component>

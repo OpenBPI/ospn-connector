@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Main-Class: com.ospn.OsnConnector
+Class-Path: c3p0-0.9.5.5.jar protobuf-java-3.6.1.jar netty-codec-http-4.
+ 1.45.Final.jar netty-codec-4.1.45.Final.jar netty-transport-4.1.45.Fina
+ l.jar netty-common-4.1.45.Final.jar netty-resolver-4.1.45.Final.jar mch
+ ange-commons-java-0.2.19.jar netty-buffer-4.1.45.Final.jar mysql-connec
+ tor-java-8.0.20.jar netty-handler-4.1.45.Final.jar fastjson-1.2.76.jar
+
