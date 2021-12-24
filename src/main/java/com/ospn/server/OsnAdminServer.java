@@ -1,6 +1,7 @@
 package com.ospn.server;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import com.ospn.common.OsnUtils;
@@ -54,6 +55,17 @@ public class OsnAdminServer extends SimpleChannelInboundHandler<FullHttpRequest>
             return replay(new ErrorData("-1",e.toString()),null);
         }
     }
+    public JSONObject nodeInfo(JSONObject json){
+        try {
+            JSONArray types = new JSONArray();
+            types.addAll(osnPeerInfo.values());
+            return replay(null,types.toString());
+        }
+        catch (Exception e){
+            logError(e);
+            return replay(new ErrorData("-1",e.toString()),null);
+        }
+    }
     public JSONObject targetMap(JSONObject json){
         try {
             json.clear();
@@ -95,6 +107,9 @@ public class OsnAdminServer extends SimpleChannelInboundHandler<FullHttpRequest>
                 case "nodeList":
                     result = nodeList(result);
                     break;
+                case "nodeInfo":
+                    result = nodeInfo(result);
+                    break;
                 case "targetMap":
                     result = targetMap(result);
                     break;
@@ -128,16 +143,16 @@ public class OsnAdminServer extends SimpleChannelInboundHandler<FullHttpRequest>
                 json = new JSONObject();
                 if(fullHttpRequest.uri().equalsIgnoreCase("/version")){
                     json.put("version", versionInfo);
-                }
-                else if(fullHttpRequest.uri().equalsIgnoreCase("/osnid")){
+                }else if(fullHttpRequest.uri().equalsIgnoreCase("/osnid")) {
                     int userCount = db.getSyncIDCount(0);
                     int groupCount = db.getSyncIDCount(1);
                     int serviceCount = db.getSyncIDCount(2);
                     json.put("userCount", userCount);
                     json.put("groupCount", groupCount);
                     json.put("serviceCount", serviceCount);
-                }
-                else
+                }else if(fullHttpRequest.uri().equalsIgnoreCase("/nodeInfo")){
+
+                }else
                     json.put("errCode", "unsupport uri");
             }
             else{

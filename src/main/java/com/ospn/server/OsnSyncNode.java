@@ -16,27 +16,38 @@ public class OsnSyncNode {
     public static void initServer(){
         new Thread(OsnSyncNode::syncTask).start();
     }
+    public static JSONObject getSyncInfo(boolean isCommand){
+        Set<String> syncPeer = new HashSet<>();
+        syncPeer.addAll(osnPeer);
+        syncPeer.addAll(cfgPeer);  //防止掉线太长，无法再接入网络
+        syncPeer.add(myIP);
+        JSONArray nodeList = new JSONArray();
+        nodeList.addAll(syncPeer);
+        JSONObject json = new JSONObject();
+        if(isCommand)
+            json.put("command", "syncNode");
+        json.put("nodeList", nodeList);
+        json.put("syncKey", osnSyncKey);
+        json.put("imType", imType);
+        json.put("ip",myIP);
+        return json;
+    }
+    public static void setPeerInfo(JSONObject json){
+        String ip = json.getString("ip");
+        if(ip == null)
+            return;
+        PeerInfo info = osnPeerInfo.computeIfAbsent(ip, k->new PeerInfo());
+        info.ip = ip;
+        info.imType = json.getString("imType");
+        info.syncKey = json.getString("syncKey");
+    }
     private static void syncTask(){
         while(true) {
             try {
                 synchronized (syncLock){
                     syncLock.wait(5*60*1000);
                 }
-
-                JSONArray nodeList = new JSONArray();
-                JSONObject peerNode = new JSONObject();
-
-                Set<String> syncPeer = new HashSet<>();
-                syncPeer.addAll(osnPeer);
-                syncPeer.addAll(cfgPeer);  //防止掉线太长，无法再接入网络
-                syncPeer.add(myIP);
-                nodeList.addAll(syncPeer);
-
-                peerNode.put("command", "syncNode");
-                peerNode.put("nodeList", nodeList);
-                peerNode.put("syncKey", osnSyncKey);
-                peerNode.put("ip",myIP);
-
+                JSONObject peerNode = getSyncInfo(true);
                 List<String> addNode = new ArrayList<>();
                 List<String> delNode = new ArrayList<>();
 
@@ -55,9 +66,7 @@ public class OsnSyncNode {
                             logInfo("remove ospn node: " + ip);
                             continue;
                         }
-                        String syncKey = json.getString("syncKey");
-                        if(syncKey != null)
-                            osnPeerKey.put(ip, syncKey);
+                        setPeerInfo(json);
                         if (json.containsKey("nodeList")) {
                             JSONArray array = json.getJSONArray("nodeList");
                             for (Object o : array) {

@@ -19,15 +19,14 @@ import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.stream.ChunkedWriteHandler;
 
 import java.io.FileInputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import static com.ospn.common.OsnUtils.logError;
 import static com.ospn.common.OsnUtils.logInfo;
+import static com.ospn.server.OsnSyncNode.*;
 
 public class OsnConnector extends OsnServer {
     public static void main(String[] args) {
@@ -41,6 +40,7 @@ public class OsnConnector extends OsnServer {
     public static DBUtils db = null;
     public static String myIP = null;
     public static String imServerIP = null;
+    public static String imType = "key";
 
     //public static int imServicePort = 8100;
     public static int imNotifyPort = 8200;
@@ -58,14 +58,19 @@ public class OsnConnector extends OsnServer {
     public static final String osnSyncKey = String.valueOf(System.currentTimeMillis());
     public static final List<String> cfgPeer = new ArrayList<>();
     public static final CopyOnWriteArraySet<String> osnPeer = new CopyOnWriteArraySet<>();
-    public static final ConcurrentHashMap<String,String> osnPeerKey = new ConcurrentHashMap<>();
+    public static final ConcurrentHashMap<String,PeerInfo> osnPeerInfo = new ConcurrentHashMap<>();
     public static final ConcurrentHashMap<String,QueryData> osnQueryMap = new ConcurrentHashMap<>();
-    public static final ConcurrentHashMap<String,String> osnTargetMap = new ConcurrentHashMap<>();   //OsnID -> ip
+    public static final ConcurrentHashMap<String,CopyOnWriteArraySet<String>> osnTargetMap = new ConcurrentHashMap<>();   //OsnID -> ip
     public static final ConcurrentHashMap<String,OsnSender> osnSenderMap = new ConcurrentHashMap<>();
     public static final ConcurrentHashMap<String,OsnSender> osnServiceMap = new ConcurrentHashMap<>();
     public OsnSender imSender = null;
     public JsonSender jsSender = null;
 
+    public static class PeerInfo{
+        public String syncKey;
+        public String imType;
+        public String ip;
+    }
     public static class QueryData{
         public String osnID;
         public ConcurrentLinkedQueue<JSONObject> jsonList;
@@ -265,6 +270,22 @@ public class OsnConnector extends OsnServer {
             }
         }
     }
+    private void delTargetMap(String osnID, String ip){
+        CopyOnWriteArraySet<String> ips = osnTargetMap.get(osnID);
+        if(ips == null){
+            return;
+        }
+        ips.remove(ip);
+    }
+    private void addTargetMap(String osnID, String ip){
+        CopyOnWriteArraySet<String> ips = osnTargetMap.get(osnID);
+        if(ips == null){
+            ips = new CopyOnWriteArraySet<>();
+            osnTargetMap.put(osnID, ips);
+        }
+        ips.add(ip);
+        osnPeer.add(ip);
+    }
     private void setOsnID(String osnID, String ip){
         int type = 0;
         if(osnID.startsWith("OSNG"))
@@ -310,25 +331,15 @@ public class OsnConnector extends OsnServer {
     }
     private void syncNode(ChannelHandlerContext ctx, JSONObject json){
         try{
-            JSONArray nodeList = new JSONArray();
-            nodeList.add(myIP);
-            nodeList.addAll(osnPeer);
-            JSONObject data = new JSONObject();
-            data.put("ip", myIP);
-            data.put("syncKey", osnSyncKey);
-            data.put("nodeList", nodeList);
+            JSONObject data = getSyncInfo(false);
             ctx.writeAndFlush(data);
+            setPeerInfo(json);
 
-            String ip = json.getString("ip");
-            String syncKey = json.getString("syncKey");
-            if(ip != null && syncKey != null)
-                osnPeerKey.put(ip, syncKey);
+            logInfo("sync node: " + json.getString("ip") + ", key: "+json.getString("syncKey"));
 
-            logInfo("sync node: " + ip + ", key: "+syncKey);
-
-            nodeList = json.getJSONArray("nodeList");
+            JSONArray nodeList = json.getJSONArray("nodeList");
             for(Object o:nodeList){
-                ip = (String)o;
+                String ip = (String)o;
                 if(isContain(ip))
                     continue;
                 if(pingNode(ip,ospnNetworkPort)) {
@@ -348,11 +359,11 @@ public class OsnConnector extends OsnServer {
         if(isOsx){
             JSONArray targetList = json.getJSONArray("targetList");
             String timeStamp = json.getString("timeStamp");
-            String querySign = json.getString("querySign");
-            if(!ECUtils.osnVerify(osnSrvID, timeStamp.getBytes(), querySign)){
-                logError("verify sign error from ip: "+ip);
-                return;
-            }
+            //String querySign = json.getString("querySign");
+            //if(!ECUtils.osnVerify(osnSrvID, timeStamp.getBytes(), querySign)){
+            //    logError("verify sign error from ip: "+ip);
+            //    return;
+            //}
             long timestamp = Long.parseLong(timeStamp);
             if(timestamp > System.currentTimeMillis() || timestamp+60*1000 < System.currentTimeMillis()){
                 logError("time differ too long from ip: "+ip);
@@ -362,13 +373,12 @@ public class OsnConnector extends OsnServer {
                 for(Object o:targetList) {
                     JSONObject data = (JSONObject)o;
                     String osnID = data.getString("osnID");
-                    String sign = data.getString("sign");
-                    if(!ECUtils.osnVerify(osnID, timeStamp.getBytes(), sign)){
-                        logError("osnID: "+osnID+", ip: "+ip);
-                        continue;
-                    }
-                    osnTargetMap.put(osnID, ip);
-                    osnPeer.add(ip);
+                    //String sign = data.getString("sign");
+                    //if(!ECUtils.osnVerify(osnID, timeStamp.getBytes(), sign)){
+                    //    logError("osnID: "+osnID+", ip: "+ip);
+                    //    continue;
+                    //}
+                    addTargetMap(osnID, ip);
                     setOsnID(osnID, ip);
                     sendQuery(osnID, ip);
                 }
@@ -403,10 +413,21 @@ public class OsnConnector extends OsnServer {
                     logInfo("targetOsnID == null");
                     return;
                 }
-                ip = osnTargetMap.get(target);
-                if (ip != null && osnPeer.contains(ip)) {
-                    logInfo("forward to OSX: " + command + ", ip: " + ip);
-                    sendOsxJson(ip, json);
+                CopyOnWriteArraySet<String> ips = osnTargetMap.get(target);
+                if(ips != null){
+                    Iterator<String> it = ips.iterator();
+                    while(it.hasNext()){
+                        ip = it.next();
+                        if(!osnPeer.contains(ip)){
+                            ips.remove(ip);
+                        }
+                    }
+                }
+                if (ips != null && !ips.isEmpty()) {
+                    for(String ipx : ips){
+                        logInfo("forward to OSX: " + command + ", ip: " + ipx);
+                        sendOsxJson(ipx, json);
+                    }
                 } else {
                     logInfo("query osnID: " + command + ", target: " + target);
                     QueryData queryData = osnQueryMap.computeIfAbsent(target,k->new QueryData(target));
@@ -443,9 +464,9 @@ public class OsnConnector extends OsnServer {
                 return;
             }
             setOsnID(osnID, tip);
+            addTargetMap(osnID, tip);
             logInfo("recv osnID: " + json.getString("osnID"));
-        }
-        else{
+        } else {
             String osnID = json.getString("osnID");
             json.remove("osnKey");
             json.put("tip", myIP);
@@ -455,6 +476,13 @@ public class OsnConnector extends OsnServer {
             logInfo("push osnID: "+osnID);
         }
     }
+    private void popOsnID(JSONObject json, boolean isOsx){
+        if(isOsx){
+            String osnID = json.getString("osnID");
+            String tip = json.getString("tip");
+            delTargetMap(osnID, tip);
+        }
+    }
     private void broadcast(JSONObject json, boolean isOsx){
         logInfo("isOsx: "+isOsx);
         if(isOsx){
@@ -462,6 +490,10 @@ public class OsnConnector extends OsnServer {
         } else {
             OsnBroadcast.send(json);
         }
+    }
+    private void setImsType(JSONObject json){
+        imType = json.getString("type");
+        logInfo("type: "+imType);
     }
     private void handleMessage(ChannelHandlerContext ctx, JSONObject json, boolean isOsx){
         try{
@@ -490,8 +522,14 @@ public class OsnConnector extends OsnServer {
                 case "pushOsnID":
                     pushOsnID(json, isOsx);
                     break;
+                case "popOsnID":
+                    popOsnID(json, isOsx);
+                    break;
                 case "Broadcast":
                     broadcast(json, isOsx);
+                    break;
+                case "setImsType":
+                    setImsType(json);
                     break;
                 default:
                     forwardJson(ctx,json,isOsx);
