@@ -1,0 +1,9 @@
+<?xml version ="1.0" encoding="UTF-8"?>
+<c3p0-config>
+    <default-config>
+        <property name="driverClass">com.mysql.cj.jdbc.Driver</property>
+        <property name="jdbcUrl">jdbc:mysql://121.36.25.220:3306/ospnTest?useSSL=true&amp;verifyServerCertificate=false&amp;serverTimezone=GMT%2B8&amp;allowPublicKeyRetrieval=true&amp;useUnicode=true&amp;characterEncoding=UTF-8&amp;autoReconnect=true</property>
+        <property name="user">dbusername</property>
+        <property name="password">password</property>
+    </default-config>
+</c3p0-config>
